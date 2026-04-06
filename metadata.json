@@ -1,0 +1,7 @@
+{
+  "name": "Remix: Remix: Remix: Remix: Hào Khí Đại Việt",
+  "description": "Ứng dụng hỗ trợ board game lịch sử Việt Nam với tính năng AR và Voice-over.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
