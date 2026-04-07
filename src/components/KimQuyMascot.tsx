@@ -29,26 +29,37 @@ export default function KimQuyMascot() {
         setMascotImg(cached);
         return;
       }
-      
+
       setIsGeneratingImg(true);
       try {
         const base64Img = await generateGoldenTurtleImage();
         if (base64Img) {
-          const transparentImg = await removeWhiteBackground(base64Img, 60);
+          const transparentImg = await removeWhiteBackground(base64Img, 80);
           setMascotImg(transparentImg);
           try {
             localStorage.setItem('customKimQuyImage', transparentImg);
           } catch (e) {
             console.warn('Could not save to localStorage', e);
           }
+        } else {
+          // Fallback: If Gemini fails, remove background from default image
+          const transparentDefault = await removeWhiteBackground('/img/thanrua.png', 80);
+          setMascotImg(transparentDefault);
         }
       } catch (error) {
         console.error('Failed to generate custom turtle image', error);
+        // Fallback: remove background from default image
+        try {
+          const transparentDefault = await removeWhiteBackground('/img/thanrua.png', 80);
+          setMascotImg(transparentDefault);
+        } catch (e) {
+          console.error('Failed to process default image', e);
+        }
       } finally {
         setIsGeneratingImg(false);
       }
     };
-    
+
     loadCustomImage();
   }, []);
 
@@ -90,7 +101,7 @@ Logic Hành động:
 
   const handleSend = async () => {
     if (!input.trim() || isLoading || !chatRef.current) return;
-    
+
     const userMsg = input.trim();
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
@@ -108,29 +119,29 @@ Logic Hành động:
   };
 
   return (
-    <motion.div 
-      drag 
+    <motion.div
+      drag
       dragMomentum={false}
       onDragStart={() => setIsDragging(true)}
       onDragEnd={() => setIsDragging(false)}
-      animate={isDragging ? { 
+      animate={isDragging ? {
         rotate: [0, -2, 2, -2, 2, 0],
         x: [0, -1, 1, -1, 1, 0],
         y: [0, 1, -1, 1, -1, 0],
         scale: 1.1
-      } : { 
+      } : {
         rotate: 0,
         x: 0,
         y: 0,
         scale: 1
       }}
-      transition={isDragging ? { 
+      transition={isDragging ? {
         rotate: { repeat: Infinity, duration: 0.2 },
         x: { repeat: Infinity, duration: 0.1 },
         y: { repeat: Infinity, duration: 0.1 },
         scale: { duration: 0.2 }
-      } : { 
-        duration: 0.3 
+      } : {
+        duration: 0.3
       }}
       className="fixed bottom-20 right-4 md:bottom-10 md:right-10 z-[100] flex flex-col items-end gap-4"
       style={{ touchAction: 'none' }}
@@ -164,11 +175,10 @@ Logic Hành động:
               <div className="relative z-10 space-y-4">
                 {messages.map((msg, idx) => (
                   <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[85%] p-3 rounded-lg text-sm font-body leading-relaxed shadow-md whitespace-pre-wrap ${
-                      msg.role === 'user' 
-                        ? 'bg-[#D4AF37] text-[#131313] rounded-br-none font-medium' 
+                    <div className={`max-w-[85%] p-3 rounded-lg text-sm font-body leading-relaxed shadow-md whitespace-pre-wrap ${msg.role === 'user'
+                        ? 'bg-[#D4AF37] text-[#131313] rounded-br-none font-medium'
                         : 'bg-[#1C1B1B] text-[#E5E2E1] border border-[#D4AF37]/30 rounded-bl-none italic'
-                    }`}>
+                      }`}>
                       {msg.text}
                     </div>
                   </div>
@@ -176,7 +186,7 @@ Logic Hành động:
                 {isLoading && (
                   <div className="flex justify-start">
                     <div className="bg-[#1C1B1B] text-[#D4AF37] border border-[#D4AF37]/30 p-3 rounded-lg rounded-bl-none text-sm italic flex gap-1 shadow-md">
-                      <span className="animate-bounce">.</span><span className="animate-bounce" style={{animationDelay: '0.2s'}}>.</span><span className="animate-bounce" style={{animationDelay: '0.4s'}}>.</span>
+                      <span className="animate-bounce">.</span><span className="animate-bounce" style={{ animationDelay: '0.2s' }}>.</span><span className="animate-bounce" style={{ animationDelay: '0.4s' }}>.</span>
                     </div>
                   </div>
                 )}
@@ -186,15 +196,15 @@ Logic Hành động:
 
             {/* Input */}
             <div className="p-3 border-t border-[#D4AF37]/30 bg-[#131313] flex gap-2">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="Hỏi Thần Kim Quy..."
                 className="flex-1 bg-[#1C1B1B] border border-[#D4AF37]/30 text-[#E5E2E1] rounded px-3 py-2 text-sm focus:outline-none focus:border-[#D4AF37] placeholder:text-[#E5E2E1]/30"
               />
-              <button 
+              <button
                 onClick={handleSend}
                 disabled={isLoading || !input.trim()}
                 className="bg-[#8B0000] text-[#D4AF37] px-3 py-2 rounded border border-[#D4AF37]/50 hover:bg-[#A00000] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
@@ -207,7 +217,7 @@ Logic Hành động:
       </AnimatePresence>
 
       {/* Mascot Button */}
-      <div 
+      <div
         id="kim-quy-mascot-btn"
         className="w-28 h-28 md:w-36 md:h-36 relative group flex items-center justify-center drop-shadow-[0_0_15px_rgba(212,175,55,0.4)]"
       >
@@ -216,14 +226,14 @@ Logic Hành động:
             <div className="w-8 h-8 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : (
-          <img 
-            src={mascotImg} 
-            alt="Thần Kim Quy" 
+          <img
+            src={mascotImg}
+            alt="Thần Kim Quy"
             className="w-full h-full object-contain p-2 hover:scale-110 transition-transform duration-300"
             referrerPolicy="no-referrer"
           />
         )}
-        <button 
+        <button
           onClick={() => setIsChatOpen(!isChatOpen)}
           className="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer"
           aria-label="Chat with Kim Quy"
